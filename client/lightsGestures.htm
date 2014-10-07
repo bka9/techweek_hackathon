@@ -56,14 +56,19 @@ Leap.loop({enableGestures: true}, function(frame) {
 
     debug(current);
 
-    $("#block").css({top: pos[2], left: current, position:'absolute'});
+    if (index==0)
+    $("#right-hand").css({top: pos[2], left: current, position:'absolute'});
+    else
+    $("#left-hand").css({top: pos[2], left: current, position:'absolute'});
   });
 
-}).use('screenPosition', {scale: 0.25});
+}).use('screenPosition', {scale: 0.2});
 
 </script>
 <html>
   <body>
-    <div id="block" style="top:500;left:500;display: inline-block;;height:100px;width:100px;background-color:#0000ff"></div>
+<img src="right-hand.png" id="right-hand" style="top:500;left:500;display: inline-block;;height:100px;width:100px">
+<img src="left-hand.png" id="left-hand" style="top:500;left:500;display: inline-block;;height:100px;width:100px">
+
   </body>
 </html>
