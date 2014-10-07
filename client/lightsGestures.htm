@@ -1,0 +1,49 @@
+<script src="http://js.leapmotion.com/leap-0.6.2.js"></script>
+<script src="http://js.leapmotion.com/leap-plugins-0.1.7.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
+
+<script>
+
+var on = false;
+var start = Number.MAX_VALUE;
+var loopCounter=0;
+var intensityThreshold = 50;
+var intensityUrl = "http://192.168.1.106:3000/percent/";
+var debugOn = true;
+
+function debug(data) {
+  if (debugOn) {
+    console.log("start:"+start);
+    console.log("x:"+data);
+  }
+}
+
+Leap.loop({enableGestures: true}, function(frame) {
+  loopCounter++;
+
+  frame.hands.forEach(function(hand, index) {
+    //Get positions
+    var pos = hand.screenPosition();
+    var current = pos[0];
+
+    //Calibrate
+    if (start == Number.MAX_VALUE)
+      start = pos[0];
+
+    debug(current);
+
+    // General X movement
+    // Don't flood server with too many requests
+    if (loopCounter%10==0) {
+      if (current > (start-intensityThreshold) &&
+          current < (start+intensityThreshold)) {
+        var x = Math.floor(current - start+50);
+        $.get( intensityUrl+x, function( data ) {});
+      }
+    }
+
+  });
+
+}).use('screenPosition', {scale: 0.25});
+
+</script>
