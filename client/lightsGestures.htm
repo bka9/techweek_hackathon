@@ -32,6 +32,8 @@ Leap.loop({enableGestures: true}, function(frame) {
 
     debug(current);
 
+    $("#block").css({top: pos[2], left: current, position:'absolute'});
+
     // General X movement
     // Don't flood server with too many requests
     if (loopCounter%10==0) {
@@ -47,3 +49,8 @@ Leap.loop({enableGestures: true}, function(frame) {
 }).use('screenPosition', {scale: 0.25});
 
 </script>
+<html>
+  <body>
+    <div id="block" style="top:500;left:500;display: inline-block;;height:100px;width:100px;background-color:#0000ff"></div>
+  </body>
+</html>
