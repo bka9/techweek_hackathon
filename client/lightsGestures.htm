@@ -5,11 +5,14 @@
 <script>
 
 var on = false;
+var isGesturing = false;
 var start = Number.MAX_VALUE;
 var loopCounter=0;
 var intensityThreshold = 50;
-var intensityUrl = "http://192.168.1.106:3000/percent/";
-var debugOn = true;
+var rootUrl = "http://192.168.1.106:3000"
+var intensityUrl = rootUrl + "/percent";
+var ladderUrl = rootUrl + "/gesture/ladder-";
+var debugOn = false;
 
 function debug(data) {
   if (debugOn) {
@@ -21,11 +24,32 @@ function debug(data) {
 Leap.loop({enableGestures: true}, function(frame) {
   loopCounter++;
 
+  frame.gestures.forEach(function(gesture, index) {
+    if (isGesturing) {
+      return;
+    }
+
+    if(gesture.type == "swipe") {
+      if (!isGesturing) {
+        isGesturing = true;
+        setTimeout(function() {
+          isGesturing = false;
+        }, 2000);
+      }
+      if(gesture.direction[0] > 0){
+        swipeDirection = "right";
+      } else {
+        swipeDirection = "left";
+      }
+      $.get( ladderUrl+swipeDirection, function( data ) {});
+    }
+  });
+
+
   frame.hands.forEach(function(hand, index) {
     //Get positions
     var pos = hand.screenPosition();
     var current = pos[0];
-
     //Calibrate
     if (start == Number.MAX_VALUE)
       start = pos[0];
@@ -33,17 +57,6 @@ Leap.loop({enableGestures: true}, function(frame) {
     debug(current);
 
     $("#block").css({top: pos[2], left: current, position:'absolute'});
-
-    // General X movement
-    // Don't flood server with too many requests
-    if (loopCounter%10==0) {
-      if (current > (start-intensityThreshold) &&
-          current < (start+intensityThreshold)) {
-        var x = Math.floor(current - start+50);
-        $.get( intensityUrl+x, function( data ) {});
-      }
-    }
-
   });
 
 }).use('screenPosition', {scale: 0.25});
