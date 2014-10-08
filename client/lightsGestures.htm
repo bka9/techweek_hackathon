@@ -12,7 +12,13 @@ var intensityThreshold = 50;
 var rootUrl = "http://192.168.1.106:3000"
 var intensityUrl = rootUrl + "/percent";
 var ladderUrl = rootUrl + "/gesture/ladder-";
+var waveUrl = rootUrl + "/gesture/wave-";
+var pianoUrl = rootUrl + "/piano/";
 var debugOn = false;
+var leftHand, rightHand;
+var swipeDirection;
+var MIN_VELOCITY = 50;
+var fingerTotal;
 
 function debug(data) {
   if (debugOn) {
@@ -21,29 +27,59 @@ function debug(data) {
   }
 }
 
+function wave(frame) {
+  if (isGesturing) {
+    return;
+  }
+
+
+  if (frame.hands[0].palmVelocity[0] > MIN_VELOCITY && frame.hands[1].palmVelocity[0] < -MIN_VELOCITY) {
+    swipeDirection = 'out';  
+    $.get( waveUrl+swipeDirection, function( data ) {});
+  }
+  else if (frame.hands[0].palmVelocity[0] < -MIN_VELOCITY && frame.hands[1].palmVelocity[0] > MIN_VELOCITY) {
+    swipeDirection = 'in';  
+    $.get( waveUrl+swipeDirection, function( data ) {});
+  }
+  console.log(frame.hands[0].palmVelocity[0] + ' - ' + frame.hands[1].palmVelocity[0]);
+
+  if (!isGesturing) {
+    enterGesture(2000);
+  }
+
+
+}
+
+function fingerDown(hand, finger) {
+  return hand.palmPosition[1] - finger.stabilizedTipPosition[1] > 20;
+}
+
 Leap.loop({enableGestures: true}, function(frame) {
   loopCounter++;
 
-  frame.gestures.forEach(function(gesture, index) {
-    if (isGesturing) {
-      return;
-    }
+  if (frame.hands.length == 2) {
+    wave(frame);
+  } else {
 
-    if(gesture.type == "swipe") {
-      if (!isGesturing) {
-        isGesturing = true;
-        setTimeout(function() {
-          isGesturing = false;
-        }, 2000);
+    frame.gestures.forEach(function(gesture, index) {
+      if (isGesturing) {
+        return;
       }
-      if(gesture.direction[0] > 0){
-        swipeDirection = "right";
-      } else {
-        swipeDirection = "left";
+
+      if(gesture.type == "swipe") {
+        if (!isGesturing) {
+          enterGesture(2000);
+        }
+        if(gesture.direction[0] > 0){
+          swipeDirection = "right";
+        } else {
+          swipeDirection = "left";
+        }
+        $.get( ladderUrl+swipeDirection, function( data ) {});
       }
-      $.get( ladderUrl+swipeDirection, function( data ) {});
-    }
-  });
+    });
+
+  }
 
 
   frame.hands.forEach(function(hand, index) {
@@ -60,10 +96,28 @@ Leap.loop({enableGestures: true}, function(frame) {
     $("#right-hand").css({top: pos[2], left: current, position:'absolute'});
     else
     $("#left-hand").css({top: pos[2], left: current, position:'absolute'});
+
+
+    fingerTotal = 0;
+    hand.fingers.forEach(function(finger, index) {
+      if (fingerDown(hand, finger)) {
+        fingerTotal += Math.pow(2, index);
+      }
+    });
+    if (!isGesturing && fingerTotal) {
+      $.get( pianoUrl+fingerTotal, function( data ) {});
+      enterGesture(100);
+    }
   });
 
 }).use('screenPosition', {scale: 0.2});
 
+function enterGesture(duration) {
+  isGesturing = true;
+  setTimeout(function() {
+    isGesturing = false;
+  }, duration);
+}
 </script>
 <html>
   <body>
