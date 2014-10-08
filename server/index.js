@@ -26,33 +26,33 @@ board.on('ready', function() {
 	    app.get("/piano/:keys", function(req,res){
 		    var keys = req.params.keys;
 		    console.log(keys & 2);
-		    if(keys & 2){
+		    if(keys & 1){
 			    console.log("turn on.");
 			    led3.on();
 		    }else{
 			    led3.off();
 		    }
-		    if(keys & 4){
+		    if(keys & 2){
 			    led5.on();
 		    }else{
 			    led5.off();
 		    }
-		    if(keys & 8){
+		    if(keys & 4){
 			    led6.on();
 		    }else{
 			    led6.off();
 		    }
-		    if(keys & 16){
+		    if(keys & 8){
 			    led9.on();
 		    }else{
 			    led9.off();
 		    }
-		    if(keys & 32){
+		    if(keys & 16){
 			    led10.on();
 		    }else{
 			    led10.off();
 		    }
-		    if(keys & 64){
+		    if(keys & 32){
 			    led11.on();
 		    }else{
 			    led11.off();
